@@ -37,6 +37,7 @@ interface PullRequest {
 
 export interface Benchmark {
     commit: Commit;
+    pullRequest?: PullRequest;
     date: number;
     tool: ToolType;
     benches: BenchmarkResult[];
@@ -695,7 +696,6 @@ export async function extractResult(config: Config): Promise<Benchmark> {
         case 'julia':
             benches = extractJuliaBenchmarkResult(output);
             break;
-            break;
         case 'jmh':
             benches = extractJmhResult(output);
             break;
@@ -723,6 +723,7 @@ export async function extractResult(config: Config): Promise<Benchmark> {
 
     return {
         commit,
+        pullRequest: github.context.payload.pull_request,
         date: Date.now(),
         tool,
         benches,

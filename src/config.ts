@@ -14,6 +14,7 @@ export interface Config {
     githubToken: string | undefined;
     autoPush: boolean;
     skipFetchGhPages: boolean;
+    commentOnPullRequest: boolean;
     commentAlways: boolean;
     saveDataFile: boolean;
     commentOnAlert: boolean;
@@ -227,6 +228,7 @@ export async function configFromJobInput(): Promise<Config> {
     const githubToken: string | undefined = core.getInput('github-token') || undefined;
     const autoPush = getBoolInput('auto-push');
     const skipFetchGhPages = getBoolInput('skip-fetch-gh-pages');
+    const commentOnPullRequest = getBoolInput('comment-on-pull-request');
     const commentAlways = getBoolInput('comment-always');
     const saveDataFile = getBoolInput('save-data-file');
     const commentOnAlert = getBoolInput('comment-on-alert');
@@ -244,6 +246,9 @@ export async function configFromJobInput(): Promise<Config> {
     validateName(name);
     if (autoPush) {
         validateGitHubToken('auto-push', githubToken, 'to push GitHub pages branch to remote');
+    }
+    if (commentOnPullRequest) {
+        validateGitHubToken('comment-on-pull-request', githubToken, 'to send pull request comment');
     }
     if (commentAlways) {
         validateGitHubToken('comment-always', githubToken, 'to send commit comment');
@@ -272,6 +277,7 @@ export async function configFromJobInput(): Promise<Config> {
         githubToken,
         autoPush,
         skipFetchGhPages,
+        commentOnPullRequest,
         commentAlways,
         saveDataFile,
         commentOnAlert,

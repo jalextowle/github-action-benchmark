@@ -231,7 +231,7 @@ function buildAlertComment(
     return lines.join('\n');
 }
 
-async function leaveComment(commitId: string, body: string, token: string) {
+async function leaveCommentOnCommit(commitId: string, body: string, token: string) {
     core.debug('Sending comment:\n' + body);
 
     const repoMetadata = getCurrentRepoMetadata();
@@ -251,10 +251,30 @@ async function leaveComment(commitId: string, body: string, token: string) {
     return res;
 }
 
-async function handleComment(benchName: string, curSuite: Benchmark, prevSuite: Benchmark, config: Config) {
-    const { commentAlways, githubToken } = config;
+async function leaveCommentOnPullRequest(pullRequestNumber: number, body: string, token: string) {
+    core.debug('Sending comment:\n' + body);
 
-    if (!commentAlways) {
+    const repoMetadata = getCurrentRepoMetadata();
+    const repoUrl = repoMetadata.html_url ?? '';
+    const client = new github.GitHub(token);
+    const res = await client.issues.createComment({
+        owner: repoMetadata.owner.login,
+        repo: repoMetadata.name,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        issue_number: pullRequestNumber,
+        body,
+    });
+
+    const commitUrl = `${repoUrl}/pull/${pullRequestNumber}`;
+    console.log(`Comment was sent to ${commitUrl}. Response:`, res.status, res.data);
+
+    return res;
+}
+
+async function handleComment(benchName: string, curSuite: Benchmark, prevSuite: Benchmark, config: Config) {
+    const { commentOnPullRequest, commentAlways, githubToken } = config;
+
+    if (!commentAlways && !commentOnPullRequest) {
         core.debug('Comment check was skipped because comment-always is disabled');
         return;
     }
@@ -267,11 +287,15 @@ async function handleComment(benchName: string, curSuite: Benchmark, prevSuite: 
 
     const body = buildComment(benchName, curSuite, prevSuite);
 
-    await leaveComment(curSuite.commit.id, body, githubToken);
+    if (commentOnPullRequest && curSuite.pullRequest !== undefined) {
+        await leaveCommentOnPullRequest(curSuite.pullRequest.number, body, githubToken);
+    } else if (commentAlways) {
+        await leaveCommentOnCommit(curSuite.commit.id, body, githubToken);
+    }
 }
 
 async function handleAlert(benchName: string, curSuite: Benchmark, prevSuite: Benchmark, config: Config) {
-    const { alertThreshold, githubToken, commentOnAlert, failOnAlert, alertCommentCcUsers, failThreshold } = config;
+    const { alertThreshold, githubToken, commentOnAlert, commentOnPullRequest, failOnAlert, alertCommentCcUsers, failThreshold } = config;
 
     if (!commentOnAlert && !failOnAlert) {
         core.debug('Alert check was skipped because both comment-on-alert and fail-on-alert were disabled');
@@ -293,7 +317,12 @@ async function handleAlert(benchName: string, curSuite: Benchmark, prevSuite: Be
         if (!githubToken) {
             throw new Error("'comment-on-alert' input is set but 'github-token' input is not set");
         }
-        const res = await leaveComment(curSuite.commit.id, body, githubToken);
+        let res;
+        if (commentOnPullRequest && curSuite.pullRequest !== undefined) {
+            res = await leaveCommentOnPullRequest(curSuite.pullRequest.number, body, githubToken);
+        } else {
+            res = await leaveCommentOnCommit(curSuite.commit.id, body, githubToken);
+        }
         url = res.data.html_url;
         message = body + `\nComment was generated at ${url}`;
     }
