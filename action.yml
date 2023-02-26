@@ -1,5 +1,5 @@
-name: 'Continuous Benchmark'
-author: 'github-action-benchmark developers <https://github.com/benchmark-action>'
+name: 'Continuous Benchmark PR Fork'
+author: 'jalextowle <https://github.com/jalextowle>'
 description: 'Continuous Benchmark using GitHub pages as dash board for keeping performance'
 branding:
   icon: 'fast-forward'
@@ -36,6 +36,10 @@ inputs:
     default: false
   skip-fetch-gh-pages:
     description: 'Skip pulling GitHub Pages branch before generating an auto commit'
+    required: false
+    default: false
+  comment-on-pull-request:
+    description: 'Leave a comment with benchmark result comparison on the pull request. To enable this feature, github-token input must be given as well'
     required: false
     default: false
   comment-always:

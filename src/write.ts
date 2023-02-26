@@ -295,7 +295,15 @@ async function handleComment(benchName: string, curSuite: Benchmark, prevSuite: 
 }
 
 async function handleAlert(benchName: string, curSuite: Benchmark, prevSuite: Benchmark, config: Config) {
-    const { alertThreshold, githubToken, commentOnAlert, commentOnPullRequest, failOnAlert, alertCommentCcUsers, failThreshold } = config;
+    const {
+        alertThreshold,
+        githubToken,
+        commentOnAlert,
+        commentOnPullRequest,
+        failOnAlert,
+        alertCommentCcUsers,
+        failThreshold,
+    } = config;
 
     if (!commentOnAlert && !failOnAlert) {
         core.debug('Alert check was skipped because both comment-on-alert and fail-on-alert were disabled');
