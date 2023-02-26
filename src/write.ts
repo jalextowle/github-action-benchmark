@@ -162,9 +162,7 @@ function commentFooter(): string {
 
 function buildComment(benchName: string, curSuite: Benchmark, prevSuite: Benchmark): string {
     const lines = [
-        `# ${benchName}`,
-        '',
-        '<details>',
+        `## ${benchName}`,
         '',
         `| Benchmark suite | Current: ${curSuite.commit.id} | Previous: ${prevSuite.commit.id} | Ratio |`,
         '|-|-|-|-|',
@@ -188,7 +186,7 @@ function buildComment(benchName: string, curSuite: Benchmark, prevSuite: Benchma
     }
 
     // Footer
-    lines.push('', '</details>', '', commentFooter());
+    lines.push('', commentFooter());
 
     return lines.join('\n');
 }
@@ -251,12 +249,29 @@ async function leaveCommentOnCommit(commitId: string, body: string, token: strin
     return res;
 }
 
-async function leaveCommentOnPullRequest(pullRequestNumber: number, body: string, token: string) {
+async function leaveCommentOnPullRequest(pullRequestNumber: number, benchName: string, body: string, token: string) {
     core.debug('Sending comment:\n' + body);
 
+    // Get an authenticated client.
+    const client = new github.GitHub(token);
     const repoMetadata = getCurrentRepoMetadata();
     const repoUrl = repoMetadata.html_url ?? '';
-    const client = new github.GitHub(token);
+
+    // Delete any comments that the action has left on the PR.
+    const comments = await client.issues.listComments({
+        owner: repoMetadata.owner.login,
+        repo: repoMetadata.name,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        issue_number: pullRequestNumber,
+        body,
+    });
+    for (const comment in comments.data.values()) {
+        if (comment.body.includes(benchName)) {
+            console.log(JSON.stringify(comment, null, 4));
+        }
+    }
+
+    // Comment on the pull request.
     const res = await client.issues.createComment({
         owner: repoMetadata.owner.login,
         repo: repoMetadata.name,
@@ -288,7 +303,7 @@ async function handleComment(benchName: string, curSuite: Benchmark, prevSuite: 
     const body = buildComment(benchName, curSuite, prevSuite);
 
     if (commentOnPullRequest && curSuite.pullRequest !== undefined) {
-        await leaveCommentOnPullRequest(curSuite.pullRequest.number, body, githubToken);
+        await leaveCommentOnPullRequest(curSuite.pullRequest.number, benchName, body, githubToken);
     } else if (commentAlways) {
         await leaveCommentOnCommit(curSuite.commit.id, body, githubToken);
     }
@@ -327,7 +342,7 @@ async function handleAlert(benchName: string, curSuite: Benchmark, prevSuite: Be
         }
         let res;
         if (commentOnPullRequest && curSuite.pullRequest !== undefined) {
-            res = await leaveCommentOnPullRequest(curSuite.pullRequest.number, body, githubToken);
+            res = await leaveCommentOnPullRequest(curSuite.pullRequest.number, benchName, body, githubToken);
         } else {
             res = await leaveCommentOnCommit(curSuite.commit.id, body, githubToken);
         }
