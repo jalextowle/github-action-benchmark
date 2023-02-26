@@ -249,7 +249,7 @@ async function leaveCommentOnCommit(commitId: string, body: string, token: strin
     return res;
 }
 
-async function leaveCommentOnPullRequest(pullRequestNumber: number, _benchName: string, body: string, token: string) {
+async function leaveCommentOnPullRequest(pullRequestNumber: number, benchName: string, body: string, token: string) {
     core.debug('Sending comment:\n' + body);
 
     // Get an authenticated client.
@@ -257,7 +257,7 @@ async function leaveCommentOnPullRequest(pullRequestNumber: number, _benchName: 
     const repoMetadata = getCurrentRepoMetadata();
     const repoUrl = repoMetadata.html_url ?? '';
 
-    // Delete any comments that the action has left on the PR.
+    // Delete any comments that the action has previously left on the PR.
     const comments = await client.issues.listComments({
         owner: repoMetadata.owner.login,
         repo: repoMetadata.name,
@@ -265,12 +265,18 @@ async function leaveCommentOnPullRequest(pullRequestNumber: number, _benchName: 
         issue_number: pullRequestNumber,
         body,
     });
-    console.log(`comment.length: ${comments.data.values()}`);
-    for (const comment in comments.data.values()) {
-        console.log(`comment: ${JSON.stringify(comment)}`);
-        console.log(`comment.body: ${JSON.stringify((comment as any).body)}`);
-        // if (comment.body.includes(benchName)) {
-        // }
+    console.log(`comment.data.keys: ${comments.data.keys()}`);
+    for (const key in comments.data.keys()) {
+        const comment = comments.data[key as any as number];
+        console.log(`comment.body: ${comment.body}`);
+        if (comment.body.includes(benchName)) {
+            await client.issues.deleteComment({
+                owner: repoMetadata.owner.login,
+                repo: repoMetadata.name,
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                comment_id: comment.id,
+            });
+        }
     }
 
     // Comment on the pull request.
