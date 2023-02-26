@@ -265,8 +265,10 @@ async function leaveCommentOnPullRequest(pullRequestNumber: number, _benchName: 
         issue_number: pullRequestNumber,
         body,
     });
-    for (const comment in comments.data) {
-        console.log((comment as any).body);
+    console.log(`comment.length: ${comments.data.values()}`);
+    for (const comment in comments.data.values()) {
+        console.log(`comment: ${JSON.stringify(comment)}`);
+        console.log(`comment.body: ${JSON.stringify((comment as any).body)}`);
         // if (comment.body.includes(benchName)) {
         // }
     }
