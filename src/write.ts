@@ -265,11 +265,11 @@ async function leaveCommentOnPullRequest(pullRequestNumber: number, _benchName: 
         issue_number: pullRequestNumber,
         body,
     });
-    console.log(JSON.stringify(comments, null, 4));
-    // for (const comment in comments.data.values()) {
-    //     // if (comment.body.includes(benchName)) {
-    //     // }
-    // }
+    for (const comment in comments.data) {
+        console.log((comment as any).body);
+        // if (comment.body.includes(benchName)) {
+        // }
+    }
 
     // Comment on the pull request.
     const res = await client.issues.createComment({
