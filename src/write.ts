@@ -259,17 +259,13 @@ async function leaveCommentOnPullRequest(pullRequestNumber: number, benchName: s
     const commitUrl = `${repoUrl}/pull/${pullRequestNumber}`;
 
     // Attempt to update an existing benchmarking comment.
-    console.log(10);
     const comments = await client.issues.listComments({
         owner: repoMetadata.owner.login,
         repo: repoMetadata.name,
         // eslint-disable-next-line @typescript-eslint/naming-convention
         issue_number: pullRequestNumber,
     });
-    console.log(11);
-    console.log(`comments.data: ${comments.data}`);
     for (const comment of comments.data) {
-        console.log(`comment:       ${comment}`);
         if (comment.body.includes(benchName)) {
             const res = await client.issues.updateComment({
                 owner: repoMetadata.owner.login,
@@ -313,12 +309,9 @@ async function handleComment(benchName: string, curSuite: Benchmark, prevSuite: 
 
     const body = buildComment(benchName, curSuite, prevSuite);
 
-    console.log(1);
     if (commentOnPullRequest && curSuite.pullRequest !== undefined) {
-        console.log(2);
         await leaveCommentOnPullRequest(curSuite.pullRequest.number, benchName, body, githubToken);
     } else if (commentAlways) {
-        console.log(3);
         await leaveCommentOnCommit(curSuite.commit.id, body, githubToken);
     }
 }
@@ -532,7 +525,6 @@ async function writeBenchmarkToGitHubPagesWithRetry(
 }
 
 async function writeBenchmarkToGitHubPages(bench: Benchmark, config: Config): Promise<Benchmark | null> {
-    console.log('writeBenchmarkToGitHubPages');
     const { ghPagesBranch, skipFetchGhPages, ghRepository, githubToken } = config;
     if (!ghRepository) {
         if (!skipFetchGhPages) {
@@ -553,10 +545,7 @@ async function writeBenchmarkToGitHubPages(bench: Benchmark, config: Config): Pr
 async function loadDataJson(jsonPath: string): Promise<DataJson> {
     try {
         const content = await fs.readFile(jsonPath, 'utf8');
-        console.log('load data json');
-        console.log(`content: ${content}`);
         const json: DataJson = JSON.parse(content);
-        console.log(`json: ${JSON.stringify(json)}`);
         core.debug(`Loaded external JSON file at ${jsonPath}`);
         return json;
     } catch (err) {
@@ -573,14 +562,10 @@ async function writeBenchmarkToExternalJson(
     config: Config,
 ): Promise<Benchmark | null> {
     const { name, maxItemsInChart, saveDataFile } = config;
-    console.log('loadDataJson');
     const data = await loadDataJson(jsonFilePath);
-    console.log(`data: ${JSON.stringify(data)}`);
     const prevBench = addBenchmarkToDataJson(name, bench, data, maxItemsInChart);
-    console.log(`prevBranch: ${JSON.stringify(prevBench)}`);
 
     if (!saveDataFile) {
-        console.log("Don't save data file");
         core.debug('Skipping storing benchmarks in external data file');
         return prevBench;
     }
@@ -598,7 +583,6 @@ async function writeBenchmarkToExternalJson(
 
 export async function writeBenchmark(bench: Benchmark, config: Config) {
     const { name, externalDataJsonPath } = config;
-    console.log(`external data json path: ${externalDataJsonPath}`);
     const prevBench = externalDataJsonPath
         ? await writeBenchmarkToExternalJson(bench, externalDataJsonPath, config)
         : await writeBenchmarkToGitHubPages(bench, config);
@@ -606,10 +590,8 @@ export async function writeBenchmark(bench: Benchmark, config: Config) {
     // Put this after `git push` for reducing possibility to get conflict on push. Since sending
     // comment take time due to API call, do it after updating remote branch.
     if (prevBench === null) {
-        console.log('Previous Benchmark was Null');
         core.debug('Alert check was skipped because previous benchmark result was not found');
     } else {
-        console.log('Handling comments');
         await handleComment(name, bench, prevBench, config);
         await handleAlert(name, bench, prevBench, config);
     }
