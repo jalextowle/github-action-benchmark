@@ -264,9 +264,10 @@ async function leaveCommentOnPullRequest(pullRequestNumber: number, benchName: s
         repo: repoMetadata.name,
         // eslint-disable-next-line @typescript-eslint/naming-convention
         issue_number: pullRequestNumber,
-        body,
     });
+    console.log(`comments.data: ${comments.data}`);
     for (const comment of comments.data) {
+        console.log(`comment:       ${comment}`);
         if (comment.body.includes(benchName)) {
             const res = await client.issues.updateComment({
                 owner: repoMetadata.owner.login,
