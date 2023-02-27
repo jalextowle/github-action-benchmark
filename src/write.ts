@@ -259,12 +259,14 @@ async function leaveCommentOnPullRequest(pullRequestNumber: number, benchName: s
     const commitUrl = `${repoUrl}/pull/${pullRequestNumber}`;
 
     // Attempt to update an existing benchmarking comment.
+    console.log(10);
     const comments = await client.issues.listComments({
         owner: repoMetadata.owner.login,
         repo: repoMetadata.name,
         // eslint-disable-next-line @typescript-eslint/naming-convention
         issue_number: pullRequestNumber,
     });
+    console.log(11);
     console.log(`comments.data: ${comments.data}`);
     for (const comment of comments.data) {
         console.log(`comment:       ${comment}`);
@@ -311,9 +313,12 @@ async function handleComment(benchName: string, curSuite: Benchmark, prevSuite: 
 
     const body = buildComment(benchName, curSuite, prevSuite);
 
+    console.log(1);
     if (commentOnPullRequest && curSuite.pullRequest !== undefined) {
+        console.log(2);
         await leaveCommentOnPullRequest(curSuite.pullRequest.number, benchName, body, githubToken);
     } else if (commentAlways) {
+        console.log(3);
         await leaveCommentOnCommit(curSuite.commit.id, body, githubToken);
     }
 }
