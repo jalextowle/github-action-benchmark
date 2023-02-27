@@ -532,6 +532,7 @@ async function writeBenchmarkToGitHubPagesWithRetry(
 }
 
 async function writeBenchmarkToGitHubPages(bench: Benchmark, config: Config): Promise<Benchmark | null> {
+    console.log("writeBenchmarkToGitHubPages");
     const { ghPagesBranch, skipFetchGhPages, ghRepository, githubToken } = config;
     if (!ghRepository) {
         if (!skipFetchGhPages) {
@@ -552,7 +553,10 @@ async function writeBenchmarkToGitHubPages(bench: Benchmark, config: Config): Pr
 async function loadDataJson(jsonPath: string): Promise<DataJson> {
     try {
         const content = await fs.readFile(jsonPath, 'utf8');
+        console.log('load data json');
+        console.log(`content: ${content}`);
         const json: DataJson = JSON.parse(content);
+        console.log(`json: ${JSON.stringify(json)}`);
         core.debug(`Loaded external JSON file at ${jsonPath}`);
         return json;
     } catch (err) {
@@ -569,10 +573,14 @@ async function writeBenchmarkToExternalJson(
     config: Config,
 ): Promise<Benchmark | null> {
     const { name, maxItemsInChart, saveDataFile } = config;
+    console.log("loadDataJson");
     const data = await loadDataJson(jsonFilePath);
+    console.log(`data: ${JSON.stringify(data)}`);
     const prevBench = addBenchmarkToDataJson(name, bench, data, maxItemsInChart);
+    console.log(`prevBranch: ${JSON.stringify(prevBench)}`);
 
     if (!saveDataFile) {
+        console.log('Don\'t save data file');
         core.debug('Skipping storing benchmarks in external data file');
         return prevBench;
     }
@@ -590,6 +598,7 @@ async function writeBenchmarkToExternalJson(
 
 export async function writeBenchmark(bench: Benchmark, config: Config) {
     const { name, externalDataJsonPath } = config;
+    console.log(`external data json path: ${externalDataJsonPath}`);
     const prevBench = externalDataJsonPath
         ? await writeBenchmarkToExternalJson(bench, externalDataJsonPath, config)
         : await writeBenchmarkToGitHubPages(bench, config);
