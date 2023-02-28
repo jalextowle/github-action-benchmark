@@ -136,12 +136,7 @@ function floatStr(n: number) {
     if (Number.isInteger(n)) {
         return n.toFixed(0);
     }
-
-    if (n > 0.1) {
-        return n.toFixed(2);
-    }
-
-    return n.toString();
+    return n.toFixed(4);
 }
 
 function strVal(b: BenchmarkResult): string {
