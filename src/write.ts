@@ -164,8 +164,8 @@ function buildComment(benchName: string, curSuite: Benchmark, prevSuite: Benchma
     const lines = [
         `## ${benchName}`,
         '',
-        `| Benchmark suite | Current: ${curSuite.commit.id} | Previous: ${prevSuite.commit.id} | Ratio |`,
-        '|-|-|-|-|',
+        `| Benchmark suite | Current: ${curSuite.commit.id} | Previous: ${prevSuite.commit.id} | Deviation | Status |`,
+        '|-|-|-|-|-|',
     ];
 
     for (const current of curSuite.benches) {
@@ -173,13 +173,20 @@ function buildComment(benchName: string, curSuite: Benchmark, prevSuite: Benchma
         const prev = prevSuite.benches.find((i) => i.name === current.name);
 
         if (prev) {
-            const ratio = biggerIsBetter(curSuite.tool)
-                ? prev.value / current.value // e.g. current=100, prev=200
-                : current.value / prev.value;
-
-            line = `| \`${current.name}\` | ${strVal(current)} | ${strVal(prev)} | \`${floatStr(ratio)}\` |`;
+            const deviation = ((current.value - prev.value) / prev.value) * 100;
+            let status_;
+            if (deviation < 0) {
+                status_ = '✅';
+            } else if (deviation === 0) {
+                status_ = '🟰';
+            } else {
+                status_ = '🚨';
+            }
+            line = `| \`${current.name}\` | ${strVal(current)} | ${strVal(prev)} | \`${floatStr(
+                deviation,
+            )}%\` | ${status_} |`;
         } else {
-            line = `| \`${current.name}\` | ${strVal(current)} | | |`;
+            line = `| \`${current.name}\` | ${strVal(current)} | | | |`;
         }
 
         lines.push(line);
@@ -192,7 +199,6 @@ function buildComment(benchName: string, curSuite: Benchmark, prevSuite: Benchma
 }
 
 function buildAlertComment(
-    alerts: Alert[],
     benchName: string,
     curSuite: Benchmark,
     prevSuite: Benchmark,
@@ -209,13 +215,31 @@ function buildAlertComment(
         `Possible performance regression was detected for benchmark${benchmarkText}.`,
         `Benchmark result of this commit is worse than the previous benchmark result exceeding threshold \`${thresholdString}\`.`,
         '',
-        `| Benchmark suite | Current: ${curSuite.commit.id} | Previous: ${prevSuite.commit.id} | Ratio |`,
-        '|-|-|-|-|',
+        `| Benchmark suite | Current: ${curSuite.commit.id} | Previous: ${prevSuite.commit.id} | Deviation | Status |`,
+        '|-|-|-|-|-|',
     ];
 
-    for (const alert of alerts) {
-        const { current, prev, ratio } = alert;
-        const line = `| \`${current.name}\` | ${strVal(current)} | ${strVal(prev)} | \`${floatStr(ratio)}\` |`;
+    for (const current of curSuite.benches) {
+        let line;
+        const prev = prevSuite.benches.find((i) => i.name === current.name);
+
+        if (prev) {
+            const deviation = ((current.value - prev.value) / prev.value) * 100;
+            let status_;
+            if (deviation < 0) {
+                status_ = '✅';
+            } else if (deviation === 0) {
+                status_ = '🟰';
+            } else {
+                status_ = '🚨';
+            }
+            line = `| \`${current.name}\` | ${strVal(current)} | ${strVal(prev)} | \`${floatStr(
+                deviation,
+            )}%\` | ${status_} |`;
+        } else {
+            line = `| \`${current.name}\` | ${strVal(current)} | | | |`;
+        }
+
         lines.push(line);
     }
 
@@ -338,8 +362,7 @@ async function handleAlert(benchName: string, curSuite: Benchmark, prevSuite: Be
         return;
     }
 
-    core.debug(`Found ${alerts.length} alerts`);
-    const body = buildAlertComment(alerts, benchName, curSuite, prevSuite, alertThreshold, alertCommentCcUsers);
+    const body = buildAlertComment(benchName, curSuite, prevSuite, alertThreshold, alertCommentCcUsers);
     let message = body;
     let url = null;
 

@@ -34,6 +34,8 @@ echo "Releasing to $version branch..."
 
 rm -rf dist
 
+git checkout "$version"
+
 set -x
 npm install
 npm run build
@@ -48,7 +50,6 @@ cp action.yml package.json package-lock.json .release/
 rsync -R dist/src/*.js .release/
 cp -R node_modules .release/node_modules
 
-git checkout "$version"
 git pull
 git rm -rf node_modules
 rm -rf node_modules  # remove node_modules/.cache
