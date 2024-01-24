@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
       - uses: actions/cache@v1
         with:
           path: ~/.npm
@@ -48,7 +48,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
       - uses: actions/setup-go@v1
       - uses: actions/cache@v1
         with:
@@ -81,7 +81,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
       - uses: actions/cache@v1
         with:
           path: ~/.npm
@@ -113,7 +113,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
       - uses: actions/setup-python@v2
         with:
           python-version: 3.9
@@ -151,7 +151,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
       - uses: actions/cache@v1
         with:
           path: ~/.npm
@@ -190,7 +190,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
       - uses: actions/cache@v1
         with:
           path: ~/.npm
@@ -227,7 +227,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
       - uses: actions/cache@v1
         with:
           path: ~/.npm
@@ -300,7 +300,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
       - uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
@@ -339,7 +339,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
       - uses: actions/cache@v1
         with:
           path: ~/.npm
@@ -373,7 +373,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
       - uses: actions/cache@v1
         with:
           path: ~/.npm
@@ -393,7 +393,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
       - uses: actions/cache@v1
         with:
           path: ~/.npm
